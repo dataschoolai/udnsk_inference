@@ -10,7 +10,6 @@ import torch
 from tqdm import tqdm
 #Get device
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-device = torch.device("cpu")
 #print device
 print("Device: ", device)
 
@@ -21,7 +20,7 @@ print("Path of weights: ", path_weights)
 model = torch.hub.load('ultralytics/yolov5', 'custom', path=path_weights)
 
 #Input directory
-input_dir = '/home/user/Documents/udnsk_inference/data/104'
+input_dir = Path.cwd()/'data/104'
 
 # input_dir = '/media/buntuml/DATASET/DAMAGEAI/REPORT/spalling/DATASET_JSON/images_list'
 #Create a list of all images_list in the directory
