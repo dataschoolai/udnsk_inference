@@ -10,7 +10,7 @@ import shutil
 import torch
 from tqdm import tqdm
 import json
-
+import argparse
 
 #Define the function to create output directory
 def make_output_dir(output_dir:str):
@@ -29,21 +29,9 @@ def make_output_dir(output_dir:str):
     return path
     
 
-#Get device
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-#print device
-print("Device: ", device)
-
-
-#Create weights veriable and assign path of weights model
-path_weights = Path.cwd()/ 'yolo_model/Exposure_100/weights/best.pt'
-print("Path of weights: ", path_weights)
-model = torch.hub.load('ultralytics/yolov5', 'custom', path=path_weights)
-
-
     
 #Define the function to predict image
-def predict(input_dir:Path,output_dir:Path):
+def predict(input_dir:Path,output_dir:Path,model_path:Path):
     """
     Predict images in input directory
     Parameters:
@@ -52,8 +40,8 @@ def predict(input_dir:Path,output_dir:Path):
     Returns:
     None
     """
-    #Create output directory if it does not exist
-    output_dir = make_output_dir(output_dir)
+
+    model = torch.hub.load('ultralytics/yolov5', 'custom', path=model_path)
     #Create a list of all images_list in the directory
     images_list = [x for x in input_dir.glob('*.jpg')]
     #loop through all images_list
@@ -87,9 +75,51 @@ def predict(input_dir:Path,output_dir:Path):
             json.dump({'label':pred_label,'preds':preds}, f)
 
 
+
 #Input directory
-INPUT_DIR = Path.cwd()/'data/104'
-OUTPUT_DIR = make_output_dir('output')
+# INPUT_DIR = Path.cwd()/'data/104'
+# OUTPUT_DIR = make_output_dir('output')
 
 #Call the function to predict images
-predict(INPUT_DIR,OUTPUT_DIR)
+
+#Define the main function
+def main():
+    """
+    Main function
+    Parameters:
+    None
+    Returns:
+    None
+    """
+
+    #Get device
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    #print device
+    print("Device: ", device)
+
+
+    #Get input and output directory
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--input_dir', type=str, required=True, help='path to input directory')
+    parser.add_argument('--output_dir', type=str, required=True, help='path to output directory')
+    #Get model path
+    parser.add_argument('--model_dir', type=str, required=True, help='path to model')
+    args = parser.parse_args()
+
+    #Call the function to predict images
+    OUTPUT_DIR = make_output_dir(args.output_dir)
+    INPUT_DIR =  Path.cwd() / args.input_dir
+
+
+    #Create weights veriable and assign path of weights model
+    MODEL_PATH = Path.cwd()/ args.model_dir
+    print("Path of weights: ", MODEL_PATH)
+
+    print("Input directory: ", INPUT_DIR)
+    predict(INPUT_DIR,OUTPUT_DIR,MODEL_PATH)
+
+
+if __name__ == '__main__':
+    main()
+
+    
